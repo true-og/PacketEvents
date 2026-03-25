@@ -1,5 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.util.Node
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JvmVendorSpec
 
 plugins {
     `java-library`
@@ -22,6 +24,10 @@ dependencies {
 }
 
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+        vendor = JvmVendorSpec.GRAAL_VM
+    }
     withSourcesJar()
     withJavadocJar()
     disableAutoTargetJvm()

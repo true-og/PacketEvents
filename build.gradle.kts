@@ -1,4 +1,5 @@
 plugins {
+    eclipse
     packetevents.`publish-conventions`
 }
 
@@ -34,6 +35,8 @@ tasks {
 }
 
 allprojects {
+    apply(plugin = "eclipse")
+
     tasks {
         withType<Jar> {
             archiveBaseName = "${rootProject.name}-${project.name}"

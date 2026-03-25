@@ -12,10 +12,6 @@ dependencyResolutionManagement {
 
 pluginManagement {
     repositories {
-        maven {
-            name = "FabricMC"
-            url = uri("https://maven.fabricmc.net/")
-        }
         mavenCentral()
         gradlePluginPortal()
     }
@@ -33,6 +29,5 @@ include("spigot")
 include("bungeecord")
 include("velocity")
 include("sponge")
-include("fabric")
 // Patch modules
 include(":patch:adventure-text-serializer-gson")

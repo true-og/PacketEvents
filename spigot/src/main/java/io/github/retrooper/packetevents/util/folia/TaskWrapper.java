@@ -18,20 +18,16 @@
 
 package io.github.retrooper.packetevents.util.folia;
 
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents a wrapper around {@code BukkitTask} and Paper's {@code ScheduledTask}.
- * This class provides a unified interface for interacting with both Bukkit's task scheduler
- * and Paper's task scheduler.
+ * Represents a wrapper around Bukkit tasks.
  */
 public class TaskWrapper {
 
-    private BukkitTask bukkitTask;
-    private ScheduledTask scheduledTask;
+    private final BukkitTask bukkitTask;
 
     /**
      * Constructs a new TaskWrapper around a BukkitTask.
@@ -42,22 +38,8 @@ public class TaskWrapper {
         this.bukkitTask = bukkitTask;
     }
 
-    /**
-     * Constructs a new TaskWrapper around Paper's ScheduledTask.
-     *
-     * @param scheduledTask the ScheduledTask to wrap
-     */
-    public TaskWrapper(@NotNull ScheduledTask scheduledTask) {
-        this.scheduledTask = scheduledTask;
-    }
-
-    /**
-     * Retrieves the Plugin that owns this task.
-     *
-     * @return the owning {@link Plugin}
-     */
     public Plugin getOwner() {
-        return bukkitTask != null ? bukkitTask.getOwner() : scheduledTask.getOwningPlugin();
+        return bukkitTask.getOwner();
     }
 
     /**
@@ -66,17 +48,13 @@ public class TaskWrapper {
      * @return true if the task is canceled, false otherwise
      */
     public boolean isCancelled() {
-        return bukkitTask != null ? bukkitTask.isCancelled() : scheduledTask.isCancelled();
+        return bukkitTask.isCancelled();
     }
 
     /**
      * Cancels the task. If the task is running, it will be canceled.
      */
     public void cancel() {
-        if (bukkitTask != null) {
-            bukkitTask.cancel();
-        } else {
-            scheduledTask.cancel();
-        }
+        bukkitTask.cancel();
     }
 }

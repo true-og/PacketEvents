@@ -17,20 +17,17 @@
  */
 
 package io.github.retrooper.packetevents.bukkit;
-
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Used on Paper 1.21.7 and 1.21.8 because of changes due to their Configuration API;
- * This is a variant of the pre-1.20.5 {@link InternalBukkitListener}, as Paper
- * no longer creates a {@link Player} object during the configuration phase to align with vanilla.
+ * Legacy compatibility wrapper retained for source compatibility.
  */
 @NullMarked
 @ApiStatus.Internal
@@ -42,13 +39,11 @@ public class InternalPaperListener implements Listener {
         this.delegate = new InternalBukkitListener(plugin);
     }
 
-    // this may seem like a random event to choose, but this is the first event which
-    // is called after the player object has been created; note that we can't extract
-    // the reference to the player's connection yet, like before 1.20.5
-    @SuppressWarnings("removal")
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onSpawnLocation(org.spigotmc.event.player.PlayerSpawnLocationEvent event) {
-        this.delegate.onPreJoin(event.getPlayer());
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onLogin(PlayerLoginEvent event) {
+        if (event.getResult() == PlayerLoginEvent.Result.ALLOWED) {
+            this.delegate.onPreJoin(event.getPlayer());
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

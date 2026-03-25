@@ -17,30 +17,17 @@
  */
 
 package io.github.retrooper.packetevents.bukkit;
-
-import com.github.retrooper.packetevents.PacketEvents;
-import io.github.retrooper.packetevents.injector.SpigotChannelInjector;
-import io.github.retrooper.packetevents.injector.handlers.PacketEventsEncoder;
-import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
-import io.netty.channel.Channel;
-import io.papermc.paper.connection.PlayerConfigurationConnection;
-import io.papermc.paper.event.connection.PlayerConnectionValidateLoginEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * We need to save the player instance before the first play-phase packets get sent by the server. Before 1.21.9,
- * we used the {@link org.spigotmc.event.player.PlayerSpawnLocationEvent}, which was called at the perfect spot.
- * As of 1.21.9, this event is now called during the configuration phase, without a player instance being available.<br/>
- * So, to still get the player instance in time, we will now pause processing packets after the configuration phase
- * ends and wait for the {@link PlayerJoinEvent}. When the {@link PlayerJoinEvent} gets called, we are able
- * to save the player instance and resume processing packets.<br/>
- * This is not a great solution, but I don't think there is a better one at the moment.
+ * Legacy compatibility wrapper retained for source compatibility.
  */
 @NullMarked
 @ApiStatus.Internal
@@ -51,40 +38,15 @@ public class InternalPaperJoinListener implements Listener {
     public InternalPaperJoinListener(Plugin plugin) {
         this.delegate = new InternalBukkitListener(plugin);
     }
-
-    private void setChannelFreeze(Channel channel, boolean freeze) {
-        channel.eventLoop().execute(() -> {
-            try {
-                SpigotChannelInjector injector = (SpigotChannelInjector) PacketEvents.getAPI().getInjector();
-                PacketEventsEncoder encoder = injector.getEncoder(channel);
-                if (encoder != null) {
-                    encoder.setHold(channel, freeze);
-                }
-            } catch (Exception exception) {
-                throw new RuntimeException(exception);
-            }
-        });
-    }
-
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onLogin(PlayerConnectionValidateLoginEvent event) {
-        if (!event.isAllowed()) {
-            return; // player will be kicked
+    public void onLogin(PlayerLoginEvent event) {
+        if (event.getResult() == PlayerLoginEvent.Result.ALLOWED) {
+            this.delegate.onPreJoin(event.getPlayer());
         }
-        if (!(event.getConnection() instanceof PlayerConfigurationConnection)) {
-            return; // player isn't exiting configuration phase, skip
-        }
-        Channel channel = (Channel) SpigotReflectionUtil.getChannelFromPaperConnection(event.getConnection());
-        this.setChannelFreeze(channel, true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onJoin(PlayerJoinEvent event) {
         this.delegate.onPostJoin(event.getPlayer());
-
-        Channel channel = (Channel) SpigotReflectionUtil.getChannel(event.getPlayer());
-        if (channel != null) {
-            this.setChannelFreeze(channel, false);
-        }
     }
 }

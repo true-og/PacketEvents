@@ -31,15 +31,10 @@ import java.util.function.Consumer;
  */
 public class AsyncScheduler {
 
-    private BukkitScheduler bukkitScheduler;
-    private io.papermc.paper.threadedregions.scheduler.AsyncScheduler asyncScheduler;
+    private final BukkitScheduler bukkitScheduler;
 
     protected AsyncScheduler() {
-        if (FoliaScheduler.isFolia) {
-            asyncScheduler = Bukkit.getAsyncScheduler();
-        } else {
-            bukkitScheduler = Bukkit.getScheduler();
-        }
+        bukkitScheduler = Bukkit.getScheduler();
     }
 
     /**
@@ -50,11 +45,7 @@ public class AsyncScheduler {
      * @return {@link TaskWrapper} instance representing a wrapped task
      */
     public TaskWrapper runNow(@NotNull Plugin plugin, @NotNull Consumer<Object> task) {
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTaskAsynchronously(plugin, () -> task.accept(null)));
-        }
-
-        return new TaskWrapper(asyncScheduler.runNow(plugin, (o) -> task.accept(null)));
+        return new TaskWrapper(bukkitScheduler.runTaskAsynchronously(plugin, () -> task.accept(null)));
     }
 
     /**
@@ -67,11 +58,7 @@ public class AsyncScheduler {
      * @return {@link TaskWrapper} instance representing a wrapped task
      */
     public TaskWrapper runDelayed(@NotNull Plugin plugin, @NotNull Consumer<Object> task, long delay, @NotNull TimeUnit timeUnit) {
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTaskLaterAsynchronously(plugin, () -> task.accept(null), convertTimeToTicks(delay, timeUnit)));
-        }
-
-        return new TaskWrapper(asyncScheduler.runDelayed(plugin, (o) -> task.accept(null), delay, timeUnit));
+        return new TaskWrapper(bukkitScheduler.runTaskLaterAsynchronously(plugin, () -> task.accept(null), convertTimeToTicks(delay, timeUnit)));
     }
 
     /**
@@ -87,11 +74,7 @@ public class AsyncScheduler {
     public TaskWrapper runAtFixedRate(@NotNull Plugin plugin, @NotNull Consumer<Object> task, long delay, long period, @NotNull TimeUnit timeUnit) {
         if (period < 1) period = 1;
 
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTaskTimerAsynchronously(plugin, () -> task.accept(null), convertTimeToTicks(delay, timeUnit), convertTimeToTicks(period, timeUnit)));
-        }
-
-        return new TaskWrapper(asyncScheduler.runAtFixedRate(plugin, (o) -> task.accept(null), delay, period, timeUnit));
+        return new TaskWrapper(bukkitScheduler.runTaskTimerAsynchronously(plugin, () -> task.accept(null), convertTimeToTicks(delay, timeUnit), convertTimeToTicks(period, timeUnit)));
     }
 
     /**
@@ -106,11 +89,7 @@ public class AsyncScheduler {
     public TaskWrapper runAtFixedRate(@NotNull Plugin plugin, @NotNull Consumer<Object> task, long initialDelayTicks, long periodTicks) {
         if (periodTicks < 1) periodTicks = 1;
 
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTaskTimerAsynchronously(plugin, () -> task.accept(null), initialDelayTicks, periodTicks));
-        }
-
-        return new TaskWrapper(asyncScheduler.runAtFixedRate(plugin, (o) -> task.accept(null), initialDelayTicks * 50, periodTicks * 50, TimeUnit.MILLISECONDS));
+        return new TaskWrapper(bukkitScheduler.runTaskTimerAsynchronously(plugin, () -> task.accept(null), initialDelayTicks, periodTicks));
     }
 
     /**
@@ -119,12 +98,7 @@ public class AsyncScheduler {
      * @param plugin Specified plugin.
      */
     public void cancel(@NotNull Plugin plugin) {
-        if (!FoliaScheduler.isFolia) {
-            bukkitScheduler.cancelTasks(plugin);
-            return;
-        }
-
-        asyncScheduler.cancelTasks(plugin);
+        bukkitScheduler.cancelTasks(plugin);
     }
 
     /**

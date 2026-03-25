@@ -31,12 +31,10 @@ import java.util.function.Consumer;
  * Represents a scheduler for executing entity tasks.
  */
 public class EntityScheduler {
-    private BukkitScheduler bukkitScheduler;
+    private final BukkitScheduler bukkitScheduler;
 
     protected EntityScheduler() {
-        if (!FoliaScheduler.isFolia) {
-            bukkitScheduler = Bukkit.getScheduler();
-        }
+        bukkitScheduler = Bukkit.getScheduler();
     }
 
     /**
@@ -53,12 +51,7 @@ public class EntityScheduler {
      * @param delay   The delay in ticks before the run callback is invoked.
      */
     public void execute(@NotNull Entity entity, @NotNull Plugin plugin, @NotNull Runnable run, @Nullable Runnable retired, long delay) {
-        if (!FoliaScheduler.isFolia) {
-            bukkitScheduler.runTaskLater(plugin, run, delay);
-            return;
-        }
-
-        entity.getScheduler().execute(plugin, run, retired, delay);
+        bukkitScheduler.runTaskLater(plugin, run, delay);
     }
 
     /**
@@ -76,11 +69,7 @@ public class EntityScheduler {
      * @return {@link TaskWrapper} instance representing a wrapped task
      */
     public TaskWrapper run(@NotNull Entity entity, @NotNull Plugin plugin, @NotNull Consumer<Object> task, @Nullable Runnable retired) {
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTask(plugin, () -> task.accept(null)));
-        }
-
-        return new TaskWrapper(entity.getScheduler().run(plugin, (o) -> task.accept(null), retired));
+        return new TaskWrapper(bukkitScheduler.runTask(plugin, () -> task.accept(null)));
     }
 
     /**
@@ -100,11 +89,7 @@ public class EntityScheduler {
     public TaskWrapper runDelayed(@NotNull Entity entity, @NotNull Plugin plugin, @NotNull Consumer<Object> task, @Nullable Runnable retired, long delayTicks) {
         if (delayTicks < 1) delayTicks = 1;
 
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTaskLater(plugin, () -> task.accept(null), delayTicks));
-        }
-
-        return new TaskWrapper(entity.getScheduler().runDelayed(plugin, (o) -> task.accept(null), retired, delayTicks));
+        return new TaskWrapper(bukkitScheduler.runTaskLater(plugin, () -> task.accept(null), delayTicks));
     }
 
     /**
@@ -126,10 +111,6 @@ public class EntityScheduler {
         if (initialDelayTicks < 1) initialDelayTicks = 1;
         if (periodTicks < 1) periodTicks = 1;
 
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTaskTimer(plugin, () -> task.accept(null), initialDelayTicks, periodTicks));
-        }
-
-        return new TaskWrapper(entity.getScheduler().runAtFixedRate(plugin, (o) -> task.accept(null), retired, initialDelayTicks, periodTicks));
+        return new TaskWrapper(bukkitScheduler.runTaskTimer(plugin, () -> task.accept(null), initialDelayTicks, periodTicks));
     }
 }

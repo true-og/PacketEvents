@@ -20,12 +20,14 @@ dependencies {
     shadow(project(":api", "shadow"))
     shadow(project(":netty-common"))
 
-    compileOnly(libs.paper)
+    compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
     compileOnly(libs.via.version)
 }
 
 tasks {
     shadowJar {
+        archiveFileName = "PacketEvents-${rootProject.ext["versionNoHash"]}.jar"
+
         // Paper doesn't need to map spigot -> mojang since we support both
         manifest {
             attributes["paperweight-mappings-namespace"] = "mojang"

@@ -30,15 +30,10 @@ import java.util.function.Consumer;
  */
 public class GlobalRegionScheduler {
 
-    private BukkitScheduler bukkitScheduler;
-    private io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler globalRegionScheduler;
+    private final BukkitScheduler bukkitScheduler;
 
     protected GlobalRegionScheduler() {
-        if (FoliaScheduler.isFolia) {
-            globalRegionScheduler = Bukkit.getGlobalRegionScheduler();
-        } else {
-            bukkitScheduler = Bukkit.getScheduler();
-        }
+        bukkitScheduler = Bukkit.getScheduler();
     }
 
     /**
@@ -48,12 +43,7 @@ public class GlobalRegionScheduler {
      * @param run    The task to execute
      */
     public void execute(@NotNull Plugin plugin, @NotNull Runnable run) {
-        if (!FoliaScheduler.isFolia) {
-            bukkitScheduler.runTask(plugin, run);
-            return;
-        }
-
-        globalRegionScheduler.execute(plugin, run);
+        bukkitScheduler.runTask(plugin, run);
     }
 
     /**
@@ -64,11 +54,7 @@ public class GlobalRegionScheduler {
      * @return {@link TaskWrapper} instance representing a wrapped task
      */
     public TaskWrapper run(@NotNull Plugin plugin, @NotNull Consumer<Object> task) {
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTask(plugin, () -> task.accept(null)));
-        }
-
-        return new TaskWrapper(globalRegionScheduler.run(plugin, (o) -> task.accept(null)));
+        return new TaskWrapper(bukkitScheduler.runTask(plugin, () -> task.accept(null)));
     }
 
     /**
@@ -82,11 +68,7 @@ public class GlobalRegionScheduler {
     public TaskWrapper runDelayed(@NotNull Plugin plugin, @NotNull Consumer<Object> task, long delay) {
         if (delay < 1) delay = 1;
 
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTaskLater(plugin, () -> task.accept(null), delay));
-        }
-
-        return new TaskWrapper(globalRegionScheduler.runDelayed(plugin, (o) -> task.accept(null), delay));
+        return new TaskWrapper(bukkitScheduler.runTaskLater(plugin, () -> task.accept(null), delay));
     }
 
     /**
@@ -102,11 +84,7 @@ public class GlobalRegionScheduler {
         if (initialDelayTicks < 1) initialDelayTicks = 1;
         if (periodTicks < 1) periodTicks = 1;
 
-        if (!FoliaScheduler.isFolia) {
-            return new TaskWrapper(bukkitScheduler.runTaskTimer(plugin, () -> task.accept(null), initialDelayTicks, periodTicks));
-        }
-
-        return new TaskWrapper(globalRegionScheduler.runAtFixedRate(plugin, (o) -> task.accept(null), initialDelayTicks, periodTicks));
+        return new TaskWrapper(bukkitScheduler.runTaskTimer(plugin, () -> task.accept(null), initialDelayTicks, periodTicks));
     }
 
     /**
@@ -115,11 +93,6 @@ public class GlobalRegionScheduler {
      * @param plugin Specified plugin.
      */
     public void cancel(@NotNull Plugin plugin) {
-        if (!FoliaScheduler.isFolia) {
-            Bukkit.getScheduler().cancelTasks(plugin);
-            return;
-        }
-
-        globalRegionScheduler.cancelTasks(plugin);
+        Bukkit.getScheduler().cancelTasks(plugin);
     }
 }

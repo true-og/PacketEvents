@@ -19,9 +19,6 @@
 package io.github.retrooper.packetevents.util.folia;
 
 import org.bukkit.Bukkit;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -30,29 +27,12 @@ import org.bukkit.plugin.Plugin;
  * otherwise it falls back to the default Bukkit scheduler.
  */
 public class FoliaScheduler {
-    static final boolean isFolia;
-    private static Class<? extends Event> regionizedServerInitEventClass;
+    static final boolean isFolia = false;
 
     private static AsyncScheduler asyncScheduler;
     private static EntityScheduler entityScheduler;
     private static GlobalRegionScheduler globalRegionScheduler;
     private static RegionScheduler regionScheduler;
-
-    static {
-        boolean folia;
-        try {
-            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
-            folia = true;
-
-            // Thanks for this code ViaVersion
-            // The class is only part of the Folia API, so we need to use reflections to get it
-            regionizedServerInitEventClass = (Class<? extends Event>) Class.forName("io.papermc.paper.threadedregions.RegionizedServerInitEvent");
-        } catch (ClassNotFoundException e) {
-            folia = false;
-        }
-
-        isFolia = folia;
-    }
 
     /**
      * @return Whether the server is running Folia
@@ -119,12 +99,6 @@ public class FoliaScheduler {
      * @param run    The task to run
      */
     public static void runTaskOnInit(Plugin plugin, Runnable run) {
-        if (!isFolia) {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, run);
-            return;
-        }
-
-        Bukkit.getServer().getPluginManager().registerEvent(regionizedServerInitEventClass, new Listener() {
-        }, EventPriority.HIGHEST, (listener, event) -> run.run(), plugin);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, run);
     }
 }

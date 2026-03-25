@@ -70,7 +70,7 @@ tasks {
     }
 
     withType<JavaCompile> {
-        options.release = 21
+        options.release = 17
     }
 }
 

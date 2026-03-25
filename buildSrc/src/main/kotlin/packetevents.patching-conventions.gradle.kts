@@ -1,3 +1,6 @@
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JvmVendorSpec
+
 plugins {
     `java-library`
     com.gradleup.shadow
@@ -13,6 +16,10 @@ repositories {
 }
 
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+        vendor = JvmVendorSpec.GRAAL_VM
+    }
     withSourcesJar()
     disableAutoTargetJvm()
 }
