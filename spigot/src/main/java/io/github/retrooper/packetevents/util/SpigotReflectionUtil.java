@@ -64,6 +64,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1199,7 +1200,7 @@ public final class SpigotReflectionUtil {
         try {
             if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_13)) {
                 if (CRAFT_PARTICLE_PARTICLES_FIELD == null) {
-                    return ParticleTypes.getByName(((Particle) particle).getKey().toString());
+                    return ParticleTypes.getByName(getBukkitParticleKey((Particle) particle));
                 }
 
                 BiMap<?, ?> map = (BiMap<?, ?>) CRAFT_PARTICLE_PARTICLES_FIELD.get(null);
@@ -1227,7 +1228,7 @@ public final class SpigotReflectionUtil {
             if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_13)) {
                 if (CRAFT_PARTICLE_PARTICLES_FIELD == null) {
                     ResourceLocation particleName = particle.getName();
-                    return Registry.PARTICLE_TYPE.get(new NamespacedKey(
+                    return getBukkitParticle(new NamespacedKey(
                             particleName.getNamespace(), particleName.getKey()));
                 }
 
@@ -1245,6 +1246,52 @@ public final class SpigotReflectionUtil {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private static String getBukkitParticleKey(Particle particle) {
+        try {
+            Method getKeyMethod = particle.getClass().getMethod("getKey");
+            Object key = getKeyMethod.invoke(particle);
+            if (key != null) {
+                return key.toString();
+            }
+        } catch (ReflectiveOperationException ignored) {
+        }
+
+        String key = particle.name().toLowerCase(Locale.ROOT);
+        if (key.equals("block_crack") || key.equals("block_dust")) {
+            return "minecraft:block";
+        }
+        return "minecraft:" + key;
+    }
+
+    private static Enum<?> getBukkitParticle(NamespacedKey namespacedKey) {
+        try {
+            Field particleRegistryField;
+            try {
+                particleRegistryField = Registry.class.getField("PARTICLE_TYPE");
+            } catch (NoSuchFieldException ignored) {
+                particleRegistryField = Registry.class.getField("PARTICLE");
+            }
+
+            Object particleRegistry = particleRegistryField.get(null);
+            Object bukkitParticle = Registry.class.getMethod("get", NamespacedKey.class).invoke(particleRegistry, namespacedKey);
+            if (bukkitParticle instanceof Enum<?>) {
+                return (Enum<?>) bukkitParticle;
+            }
+        } catch (ReflectiveOperationException ignored) {
+        }
+
+        String particleKey = namespacedKey.getKey();
+        if (particleKey.equals("block")) {
+            particleKey = "block_crack";
+        }
+
+        try {
+            return Particle.valueOf(particleKey.toUpperCase(Locale.ROOT).replace('-', '_'));
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     public static Object getRemoteChatSession(Player player) {

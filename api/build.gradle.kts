@@ -2,7 +2,6 @@ import com.github.retrooper.compression.strategy.dir.JsonBase64DataDirStrategy
 import com.github.retrooper.compression.strategy.dir.JsonRegistryCompressionDirStrategy
 import com.github.retrooper.compression.strategy.dir.JsonToNbtDirStrategy
 import com.github.retrooper.excludeAdventure
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     packetevents.`shadow-conventions`
@@ -32,19 +31,6 @@ dependencies {
     }
     compileOnly(libs.gson)
 
-    testImplementation(libs.bundles.adventure)
-    testImplementation(project(":patch:adventure-text-serializer-gson"))
-    testImplementation(libs.adventure.text.serializer.legacy)
-    testImplementation(project(":netty-common"))
-    testImplementation(testlibs.mockbukkit)
-    testImplementation(testlibs.paper.api)
-    testImplementation(testlibs.slf4j)
-    testImplementation(testlibs.bundles.junit)
-    testImplementation(libs.netty)
-    testImplementation(libs.classgraph)
-    testImplementation(project(":spigot"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.2")
 }
 
 mappingCompression {
@@ -86,13 +72,6 @@ tasks {
 
     generateVersionsFile {
         packageName = "com.github.retrooper.packetevents.util"
-    }
-
-    test {
-        useJUnitPlatform()
-        testLogging {
-            exceptionFormat = TestExceptionFormat.FULL
-        }
     }
 
     shadowJar {

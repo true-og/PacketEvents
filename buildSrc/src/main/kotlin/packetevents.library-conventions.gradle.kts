@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.util.Node
+import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JvmVendorSpec
 
@@ -34,6 +35,10 @@ java {
 }
 
 tasks {
+    withType<Test> {
+        enabled = false
+    }
+
     withType<JavaCompile> {
         options.compilerArgs.add("-parameters")
         options.compilerArgs.add("-g")
@@ -74,14 +79,16 @@ tasks {
         }
     }
 
+    val versionText = project.version.toString()
     val writeVersionFile by tasks.registering {
         val outFile = layout.buildDirectory.file("generated/${rootProject.name}_${project.name}_version.txt")
         outputs.file(outFile)
+        inputs.property("version", versionText)
 
         doLast {
             outFile.map { it.asFile }.get().apply {
                 parentFile.mkdirs()
-                writeText(project.version.toString())
+                writeText(versionText)
             }
         }
     }

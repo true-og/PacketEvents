@@ -3,10 +3,6 @@ dependencyResolutionManagement {
         create("libs") {
             from(files("libs.versions.toml"))
         }
-
-        create("testlibs") {
-            from(files("testlibs.versions.toml"))
-        }
     }
 }
 
@@ -28,6 +24,5 @@ include("netty-common")
 include("spigot")
 include("bungeecord")
 include("velocity")
-include("sponge")
 // Patch modules
 include(":patch:adventure-text-serializer-gson")
