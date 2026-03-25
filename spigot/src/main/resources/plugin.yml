@@ -1,4 +1,4 @@
-name: packetevents
+name: PacketEvents
 version: ${version}
 api-version: 1.13
 main: io.github.retrooper.packetevents.PacketEventsPlugin

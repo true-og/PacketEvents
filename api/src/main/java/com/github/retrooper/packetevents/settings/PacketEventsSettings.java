@@ -34,7 +34,7 @@ public class PacketEventsSettings {
 
     private TimeStampMode timestampMode = TimeStampMode.MILLIS;
     private boolean defaultReencode = true; // true for backwards compat and more idiot-proof
-    private boolean checkForUpdates = true;
+    private boolean checkForUpdates = false;
     private boolean downsampleColors = false;
     private boolean debugEnabled = false;
     private boolean fullStackTraceEnabled = false;
