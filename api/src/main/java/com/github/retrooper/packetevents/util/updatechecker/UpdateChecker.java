@@ -19,20 +19,10 @@
 package com.github.retrooper.packetevents.util.updatechecker;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.util.ColorUtil;
 import com.github.retrooper.packetevents.util.PEVersion;
-import com.github.retrooper.packetevents.util.adventure.AdventureSerializer;
-import com.google.gson.JsonObject;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -44,61 +34,22 @@ import java.util.function.Consumer;
  */
 @ApiStatus.Internal
 public class UpdateChecker {
+    // Update checking is disabled in this build. No network calls are ever made.
     @ApiStatus.Internal
     public String checkLatestReleasedVersion() {
-        try {
-            URLConnection connection = new URL("https://api.github.com/repos/retrooper/packetevents/releases/latest").openConnection();
-            connection.addRequestProperty("User-Agent", "Mozilla/4.0");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String jsonResponse = reader.readLine();
-            reader.close();
-            JsonObject jsonObject = AdventureSerializer.serializer().gson().serializer().fromJson(jsonResponse, JsonObject.class);
-            return jsonObject.get("name").getAsString();
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to parse packetevents version!", e);
-        }
+        return PacketEvents.getAPI().getVersion().toString();
     }
 
     /**
-     * Check for an update and log in the console (ALL DONE ON THE CURRENT THREAD).
+     * Update checking is disabled in this build. Always reports up-to-date
+     * without performing any network request.
      */
     @ApiStatus.Internal
     public UpdateCheckerStatus checkForUpdate(@Nullable Consumer<PEVersion> latestVersionHolder) {
-        PEVersion localVersion = PacketEvents.getAPI().getVersion();
-        PEVersion newVersion;
-        try {
-            newVersion = PEVersion.fromString(checkLatestReleasedVersion());
-            if (latestVersionHolder != null) {
-                latestVersionHolder.accept(newVersion);
-            }
-        } catch (Exception ex) {
-            PacketEvents.getAPI().getLogManager().warn("Failed to check for updates. "
-                    + (ex.getCause() != null ? ex.getCause().getClass().getName() + ": " + ex.getCause().getMessage() : ex.getMessage()));
-            return UpdateCheckerStatus.FAILED;
+        if (latestVersionHolder != null) {
+            latestVersionHolder.accept(PacketEvents.getAPI().getVersion());
         }
-
-        if (localVersion.isOlderThan(newVersion)) {
-            PacketEvents.getAPI().getLogManager().warn("There is an update available for PacketEvents! Your build: ("
-                    + ColorUtil.toString(NamedTextColor.YELLOW) + localVersion
-                    + ColorUtil.toString(NamedTextColor.WHITE) + ") | Latest release: ("
-                    + ColorUtil.toString(NamedTextColor.GREEN) + newVersion
-                    + ColorUtil.toString(NamedTextColor.WHITE) + ")");
-            return UpdateCheckerStatus.OUTDATED;
-        } else if (localVersion.isNewerThan(newVersion)) {
-            PacketEvents.getAPI().getLogManager().info("You are running a development build of PacketEvents. Your build: ("
-                    + ColorUtil.toString(NamedTextColor.AQUA) + localVersion
-                    + ColorUtil.toString(NamedTextColor.WHITE) + ") | Latest release: ("
-                    + ColorUtil.toString(NamedTextColor.DARK_AQUA) + newVersion
-                    + ColorUtil.toString(NamedTextColor.WHITE) + ")");
-            return UpdateCheckerStatus.PRE_RELEASE;
-        } else if (localVersion.equals(newVersion)) {
-            PacketEvents.getAPI().getLogManager().info("You are running the latest release of PacketEvents. Your build: ("
-                    + ColorUtil.toString(NamedTextColor.GREEN) + newVersion + ColorUtil.toString(NamedTextColor.WHITE) + ")");
-            return UpdateCheckerStatus.UP_TO_DATE;
-        } else {
-            PacketEvents.getAPI().getLogManager().warn("Failed to check for updates. Your build: (" + localVersion + ")");
-            return UpdateCheckerStatus.FAILED;
-        }
+        return UpdateCheckerStatus.UP_TO_DATE;
     }
 
     @ApiStatus.Internal
@@ -108,26 +59,18 @@ public class UpdateChecker {
 
     @Deprecated @ApiStatus.Internal
     public void handleUpdateCheck(@Nullable Runnable updateCheckCallback) {
-        Thread thread = new Thread(() -> {
-            PacketEvents.getAPI().getLogManager().info("Checking for updates, please wait...");
-            UpdateCheckerStatus status = checkForUpdate();
-            if (updateCheckCallback != null)
-                updateCheckCallback.run();
-        }, "packetevents-update-check-thread");
-        thread.start();
+        // No-op: update checking disabled. Still invoke the callback so callers proceed.
+        if (updateCheckCallback != null) {
+            updateCheckCallback.run();
+        }
     }
 
     @ApiStatus.Internal
     public void handleUpdateCheck(@Nullable BiConsumer<PEVersion, UpdateCheckerStatus> updateResultHolder) {
-        Thread thread = new Thread(() -> {
-            PacketEvents.getAPI().getLogManager().info("Checking for updates, please wait...");
-            AtomicReference<PEVersion> latestVersion = new AtomicReference<>();
-            Consumer<PEVersion> latestVersionHolder = latestVersion::set;
-            UpdateCheckerStatus status = checkForUpdate(latestVersionHolder);
-            if (updateResultHolder != null)
-                updateResultHolder.accept(latestVersion.get(), status);
-        }, "packetevents-update-check-thread");
-        thread.start();
+        // No-op: update checking disabled. Still invoke the callback so callers proceed.
+        if (updateResultHolder != null) {
+            updateResultHolder.accept(PacketEvents.getAPI().getVersion(), UpdateCheckerStatus.UP_TO_DATE);
+        }
     }
 
     @ApiStatus.Internal
